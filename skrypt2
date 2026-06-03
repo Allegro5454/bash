@@ -1,0 +1,16 @@
+#!/bin/bash
+a="hello"
+a=$(tr '[a-e]' '[A-E]' <<< $a)
+b=$(ls)
+c=$(sed s'/s//' <<< $b )
+#echo $a $c  
+
+#echo "\n Podaj swoje imie"
+#read imie
+#echo "Czesc $imie"
+
+#echo "\n podaj sciezke folderu"
+#read -r path
+#PATH=$(ls $path)
+#echo $PATH
+a
