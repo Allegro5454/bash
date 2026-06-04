@@ -1,2 +1,3 @@
-this script will eventually be capable of sorting files into subdirectories,
-with names based on their extension names
+This script can sort files from Downloads
+to subdirectories in /home/user
+works only in polish and english

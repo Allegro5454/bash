@@ -16,10 +16,10 @@ c=$(sed s'/s//' <<< $b )
 #echo $PATH
 a
 COM
-
+<<com2
 HOME_LIST=(/home/"$USER"/*)
 #WORKS ONLY FOR POLISH AND ENGLISH 
-echo "$HOME_LIST"
+echo ${HOME_LIST[@]}
 DOWNLOADS_FOLDER=("${HOME_LIST[@]//*[Downloads*/}")
 if [ ${#DOWNLOADS_FOLDER[@]} -eq 0 ]; then
     DOWNLOADS_FOLDER=( "${HOME_LIST[@]//*Pobrane*/}" )
@@ -27,10 +27,13 @@ fi
 
 echo "$DOWNLOADS_FOLDER"
 
-<<com2
+
 HOME_LIST=( /home/"$USER"/* )
 
 for plik in "${HOME_LIST[@]}"; do
     echo "Plik w katalogu domowym: $plik"
 done
 com2
+A=${FILE##*.}
+    
+echo $A
