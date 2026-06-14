@@ -1,39 +1,5 @@
 #!/bin/bash
-<<COM
-a="hello"
-a=$(tr '[a-e]' '[A-E]' <<< $a)
-b=$(ls)
-c=$(sed s'/s//' <<< $b )
-#echo $a $c  
-
-#echo "\n Podaj swoje imie"
-#read imie
-#echo "Czesc $imie"
-
-#echo "\n podaj sciezke folderu"
-#read -r path
-#PATH=$(ls $path)
-#echo $PATH
-a
-COM
-<<com2
-HOME_LIST=(/home/"$USER"/*)
-#WORKS ONLY FOR POLISH AND ENGLISH 
-echo ${HOME_LIST[@]}
-DOWNLOADS_FOLDER=("${HOME_LIST[@]//*[Downloads*/}")
-if [ ${#DOWNLOADS_FOLDER[@]} -eq 0 ]; then
-    DOWNLOADS_FOLDER=( "${HOME_LIST[@]//*Pobrane*/}" )
-fi
-
-echo "$DOWNLOADS_FOLDER"
-
-
-HOME_LIST=( /home/"$USER"/* )
-
-for plik in "${HOME_LIST[@]}"; do
-    echo "Plik w katalogu domowym: $plik"
-done
-com2
-A=${FILE##*.}
-    
-echo $A
+ZMIENNA="tekst.tekst"
+ZMIENNA=$( sed s'/\..*//' <<< "$ZMIENNA" )
+echo "$ZMIENNA"
+ 
