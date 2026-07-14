@@ -1,0 +1,10 @@
+# Logs
+*.log
+
+# config files
+config
+*.conf
+
+# temporary files
+*.swp
+*~

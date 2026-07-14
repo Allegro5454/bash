@@ -14,7 +14,11 @@ Designed for automated background execution (e.g., via cron or systemd).
 Script automatically generates logs based on the executing user:
 - Root: `/var/log/backup-manager/`
 - User: `~/.local/state/backup_manager/`
-
+# CONFIGURATION
+Configuration is read from `~/.config/RS_BACKUP/config`.
+There are 2 variables that can be set:
+- API="<your_discord_webhook>"
+- ALTERNATE_PATH="<alternate_log_path>"
 # HOW TO START
 chmod +x RS_BACKUP.sh
 ./RS_BACKUP.sh FROM_PATH TO_PATH

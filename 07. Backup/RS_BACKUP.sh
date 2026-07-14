@@ -1,16 +1,31 @@
 #!/bin/bash
-#Looking for a bad command syntax.
+# Checking for a config file.
+if [[ -f "$HOME"/.config/RS_BACKUP/config ]]; then
+    source "$HOME"/.config/RS_BACKUP/config
+fi
 CURR_DATE=$(date +%F-%H-%M )
 LOG_FILE="BACKUP$CURR_DATE.log"
-if [[ "$EUID" -eq 0 ]]; then
-    LOG_LOC="/var/log/backup-manager/"
-else
-    LOG_LOC="$HOME/.local/state/backup_manager/"
+#Looking for a bad command syntax.
+if [[ ! -z "$ALTERNATE_PATH" ]]; then
+        LOG_LOC="$ALTERNATE_PATH"
+    elif [[ "$EUID" -eq 0 ]]; then
+        LOG_LOC="/var/log/backup-manager"
+    else
+        LOG_LOC="$HOME/.local/state/backup_manager"
 fi
 mkdir -p "$LOG_LOC"
+#Defining functions
 logmsg() {
-    echo -e "$1" | tee -a "$LOG_LOC$LOG_FILE"
+    echo -e "$1" | tee -a "$LOG_LOC"/"$LOG_FILE"
 }
+logntf() {
+    if [ ! -z "$API" ]; then
+            curl -s -H "Content-Type: application/json" -XPOST "$API" -d '{"content": "'"$1"'"}' 
+        else
+            notify-send "$1" > /dev/null 2>&1
+    fi
+}
+
 #Start of the script
 logmsg "=== Backup Manager ==="
 if (( "$#" < 2 )); then 
@@ -26,23 +41,20 @@ if [[ ! "$1" == *:* ]]; then
     fi    
 else
     SSH_CHECK=${1%%:*}
-    logmsg "$SSH_CHECK"
-    ssh -o BatchMode=yes -o ConnectTimeout=10 "$SSH_CHECK" exit > /dev/null 2>&1
-    if [[ ! $? == 0 ]]; then
-        logmsg "SSH connection wasn't established"
+    if ! ssh -o BatchMode=yes -o ConnectTimeout=5 "$SSH_CHECK" exit > /dev/null 2>&1; then
+        logmsg "Could not establish SSH connection to destination: $SSH_CHECK"
         exit 1
     fi
 fi
 #Looking for a connection error
 if [[ "$2" == *:* ]]; then
     SSH_CHECK2=${2%%:*}
-    ssh -o BatchMode=yes -o ConnectTimeout=5 "$SSH_CHECK2" exit > /dev/null 2>&1 
-    if [[ ! $? == 0 ]]; then
-        logmsg "SSH connection wasn't established"
+    if ! ssh -o BatchMode=yes -o ConnectTimeout=5 "$SSH_CHECK2" exit > /dev/null 2>&1; then
+        logmsg "Could not establish SSH connection to destination: $SSH_CHECK2"
         exit 1
     fi
 fi
-#checking disc usage
+#checking disk usage
 if [[ ! "$1" == *:* ]]; then
     USG_1=$( du -k --summarize "$1" | awk '{print $1}')
 else
@@ -62,23 +74,25 @@ else
     USG_2=$( ssh -o BatchMode=yes -o ConnectTimeout=5 "$SSH_CHECK2" " df -k --output=avail \"$FATH_DIR\" | tail -n 1"  )
 fi
 if [[ -z "$USG_1" ]]; then
-    logmsg "The command ended with an error "
+    logmsg "Script cannot access files. "
     exit 1
 fi
 if [[ -z "$USG_2" ]]; then
-    logmsg "The command ended with an error"
+    logmsg "Script cannot access backup destination. "
     exit 1
 fi
 if (( USG_1 > USG_2*8/10 )); then
-    logmsg "Not enough free space"
+    logmsg "Not enough space on the backup drive"
+    logntf "Not enough space on the backup drive"
     exit 1
 fi
 
-rsync -e "ssh -o BatchMode=yes -o ConnectTimeout=5" -avh "$1" "$2" >> "$LOG_LOC$LOG_FILE" 2>&1
+rsync -e "ssh -o BatchMode=yes -o ConnectTimeout=5" -avh "$1" "$2" >> "$LOG_LOC/$LOG_FILE" 2>&1
 RSYNC_EXT=$?
 if [[ $RSYNC_EXT -ne 0 ]]; then
     logmsg "Process encountered a problem. Error Code: $RSYNC_EXT "
     exit 1
 else
-    logmsg "=== Data transfered succesfully ==="
+    logntf "Data transferred successfully"
 fi
+logmsg "=== Data transferred successfully ==="
